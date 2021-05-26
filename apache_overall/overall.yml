@@ -1,0 +1,71 @@
+---
+- name: Let's start the work
+  hosts: '{{var1}}'
+  become: yes
+  vars_files:
+          - newfolder/default.yml
+          - newfolder/apache_{{ ansible_os_family }}.yml
+          - newfolder/apache_{{ ansible_os_family }}.yml 
+  
+  tasks:
+          - name: Let's install the {{var2}}
+            yum:
+                    name: '{{var2}}'
+                    state: present
+            tags:
+                    - installed
+
+          - name: Copy the index file
+            copy:
+                    src: index.html
+                    dest: /var/www/html/
+            tags:
+                    - installed    
+
+          - name: Start the {{var2}}
+            systemd:
+                    name: '{{var2}}'
+                    state: started
+                    enabled: yes
+            when: ansible_os_family == "RedHat"
+            tags:
+                    - installed
+
+          - name: Start the {{var2}}
+            service:
+                    name: '{{var2}}'
+                    state: started
+                    enabled: yes
+            when: ansible_os_family == "Debian"
+            tags:
+                    - installed
+
+          - name: Stop the {{var2}}
+            systemd:
+                    name: '{{var2}}'
+                    state: stopped
+            when: ansible_os_family == "RedHat"
+            tags:
+                    - uninstalled
+
+          - name: Stop the {{var2}}
+            service:
+                    name: '{{var2}}'
+                    state: stopped
+            when: ansible_os_family == "Debian"
+            tags:
+                    - uninstalled
+
+          - name: Remove the index file
+            file:
+                    path: /var/www/html/index.html
+                    state: absent
+            tags:
+                    - uninstalled        
+
+          - name: Remove the {{var2}}
+            yum:
+                    name: '{{var2}}'
+                    state: absent
+            tags:
+                    - uninstalled      
