@@ -5,7 +5,6 @@
   vars_files:
           - newfolder/default.yml
           - newfolder/apache_{{ ansible_os_family }}.yml
-          - newfolder/apache_{{ ansible_os_family }}.yml 
   
   tasks:
           - name: Let's install the {{var2}}
@@ -17,7 +16,7 @@
 
           - name: Copy the index file
             copy:
-                    src: index.html
+                    src: newfolder/index.html
                     dest: /var/www/html/
             tags:
                     - installed    
@@ -39,6 +38,18 @@
             when: ansible_os_family == "Debian"
             tags:
                     - installed
+
+          - name: Copy the script
+            copy:
+                    src: '{{pscript}}'
+                    dest: /tmp
+            tags:
+                    - status
+
+          - name: Copy the script on Amazonhost
+            shell: python3 /tmp/'{{pscript}}'
+            tags:
+                    - status          
 
           - name: Stop the {{var2}}
             systemd:
