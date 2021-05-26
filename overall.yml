@@ -1,0 +1,37 @@
+---
+- name: Let's start the work on {{hostsa}}
+  become: yes
+  hosts: '{{hostsa}}'
+  vars:
+          hostsa: amazon*
+          pac: httpd
+  tasks:
+          - name: Let's install the {{pac}}
+            yum:
+                    name: '{{pac}}'
+                    state: present
+
+          - name: Let's start the service httpd
+            service:
+                    name: '{{pac}}'
+                    state: started
+
+          - name: Let's copy the file
+            file:
+                    src: index.html
+                    dest: /var/www/html/
+
+          - name: Let's remove the file
+            file:
+                    path: /var/www/html/index.html
+                    state: absent
+            
+          - name: Let's stop the {{pac}}
+            service:
+                    name: '{{pac}}'
+                    state: stopped
+
+          - name: Let's remove the {{pac}}
+            yum:
+                    name: '{{pac}}'
+                    state: absent 
