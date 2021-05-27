@@ -12,14 +12,14 @@
                     name: '{{var2}}'
                     state: present
             tags:
-                    - installed
+                    - install
 
           - name: Copy the index file
             copy:
                     src: newfolder/index.html
                     dest: /var/www/html/
             tags:
-                    - installed    
+                    - install    
 
           - name: Start the {{var2}}
             systemd:
@@ -28,7 +28,7 @@
                     enabled: yes
             when: ansible_os_family == "RedHat"
             tags:
-                    - installed
+                    - install
 
           - name: Start the {{var2}}
             service:
@@ -37,7 +37,7 @@
                     enabled: yes
             when: ansible_os_family == "Debian"
             tags:
-                    - installed
+                    - install
 
           - name: Copy the script
             copy:
@@ -46,10 +46,18 @@
             tags:
                     - status
 
-          - name: Copy the script on Amazonhost
+          - name: Running the script
             shell: python3 /tmp/'{{pscript}}'
             tags:
-                    - status          
+                    - status
+            register: var3
+
+          - name: Saving in the template
+            template:
+                    src: sample.txt.j2
+                    dest: /tmp/sample.txt
+            tags:
+                    - status   
 
           - name: Stop the {{var2}}
             systemd:
@@ -57,7 +65,7 @@
                     state: stopped
             when: ansible_os_family == "RedHat"
             tags:
-                    - uninstalled
+                    - uninstall
 
           - name: Stop the {{var2}}
             service:
@@ -65,18 +73,18 @@
                     state: stopped
             when: ansible_os_family == "Debian"
             tags:
-                    - uninstalled
+                    - uninstall
 
           - name: Remove the index file
             file:
                     path: /var/www/html/index.html
                     state: absent
             tags:
-                    - uninstalled        
+                    - uninstall        
 
           - name: Remove the {{var2}}
             yum:
                     name: '{{var2}}'
                     state: absent
             tags:
-                    - uninstalled      
+                    - uninstall     
