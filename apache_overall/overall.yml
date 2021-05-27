@@ -7,7 +7,7 @@
           - newfolder/apache_{{ ansible_os_family }}.yml
   
   tasks:
-          - name: Let's install the {{var2}}
+          - name: Let's install the Apache2 / HTTPD
             yum:
                     name: '{{var2}}'
                     state: present
@@ -21,7 +21,7 @@
             tags:
                     - install    
 
-          - name: Start the {{var2}}
+          - name: Start the HTTPD
             systemd:
                     name: '{{var2}}'
                     state: started
@@ -30,7 +30,7 @@
             tags:
                     - install
 
-          - name: Start the {{var2}}
+          - name: Start the Apache2
             service:
                     name: '{{var2}}'
                     state: started
@@ -42,24 +42,46 @@
           - name: Copy the script
             copy:
                     src: '{{pscript}}'
-                    dest: /tmp
+                    dest: /tmp/ansible_log/
             tags:
                     - status
 
           - name: Running the script
-            shell: python3 /tmp/'{{pscript}}'
+            shell: python3 /tmp/ansible_log/'{{pscript}}'
             tags:
                     - status
             register: var3
 
+          - name: Capture timestamp
+            shell: date +"%Y%m%d%H%M%S"
+            register: current_date_time
+            tags:
+                    - status
+
           - name: Saving in the template
             template:
                     src: sample.txt.j2
-                    dest: /tmp/sample.txt
+                    dest: /tmp/ansible_log/sample_{{ inventory_hostname }}_{{ current_date_time.stdout }}.txt
             tags:
                     - status   
 
-          - name: Stop the {{var2}}
+          - name: Fetch the output file
+            fetch: 
+                src: /tmp/ansible_log/sample_{{ inventory_hostname }}_{{ current_date_time.stdout }}.txt 
+                dest: /tmp/ansible_log/sample_{{ inventory_hostname }}_{{ current_date_time.stdout }}.txt 
+                flat: yes
+
+            tags:
+                    - status    
+                   
+          - name: Removing the source log file
+            file: 
+                path: /tmp/ansible_log
+                state: absent
+            tags:
+                    - status
+                         
+          - name: Stop the HTTPD
             systemd:
                     name: '{{var2}}'
                     state: stopped
@@ -67,7 +89,7 @@
             tags:
                     - uninstall
 
-          - name: Stop the {{var2}}
+          - name: Stop the Apache2
             service:
                     name: '{{var2}}'
                     state: stopped
@@ -82,7 +104,7 @@
             tags:
                     - uninstall        
 
-          - name: Remove the {{var2}}
+          - name: Remove the Apache2 / HTTPD
             yum:
                     name: '{{var2}}'
                     state: absent
